@@ -13,5 +13,18 @@ namespace WebCrawler
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            ViewModels.MainWindowViewModel viewModels = new WebCrawler.ViewModels.MainWindowViewModel();
+            Window window = new Views.MainWindowView(viewModels);
+            window.Show();
+
+        }
     }
+
+    
+
+
+
 }
