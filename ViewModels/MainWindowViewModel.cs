@@ -69,6 +69,7 @@ namespace WebCrawler.ViewModels
             UrlDone = new ObservableCollection<string>();
             UrlToDo = new ObservableCollection<string>();
             this.StartCommand = new ButtonsCommand(StartCommandExecute, CanStartCommand);
+            this.StopCommand = new ButtonsCommand(StopCommandExecute, CanStopCommand);
         }
 
         private string websitelToCrawler = string.Empty;
@@ -76,9 +77,22 @@ namespace WebCrawler.ViewModels
             get { return websitelToCrawler; }
             set {
                 this.websitelToCrawler = value;
+                this.urlStatus.Ulr = value;
+                NotifyPropertyChanged();
+                NotifyPropertyChanged("UrlStatus");
+            }
+        }
+
+
+        private Models.WebsiteUrlStatus urlStatus = new Models.WebsiteUrlStatus();
+        public Models.WebsiteUrlStatus UrlStatus {
+            get { return urlStatus; }
+            set {
+                this.urlStatus = value;
                 NotifyPropertyChanged();
             }
         }
+
 
         public string currentUrl = "";
         public string CurrentUrl {
@@ -118,8 +132,9 @@ namespace WebCrawler.ViewModels
         {
             
             CurrentUrl = websitelToCrawler;
+            this.UrlStatus.Status = Models.EnumStatus.working;
             //string data = Models.HtmlHelper.GetHtmlCode(websitelToCrawler);
-            NotifyPropertyChanged("WebsitelToCrawler");
+            NotifyPropertyChanged("UrlStatus");
         }
 
         private bool CanStartCommand(object obj)
@@ -129,8 +144,29 @@ namespace WebCrawler.ViewModels
 
         #endregion
 
+        #region Stop Command   
 
-        
+        public ButtonsCommand StopCommand {
+            get;
+            private set;
+        }
+
+        private void StopCommandExecute(object obj)
+        {
+            CurrentUrl = "";
+            WebsitelToCrawler = "";
+            this.urlStatus.Ulr = "";
+            this.UrlStatus.Status = Models.EnumStatus.notWorking;
+        }
+
+        private bool CanStopCommand(object obj)
+        {
+            return true;
+        }
+
+        #endregion
+
+
 
 
     }

@@ -6,11 +6,13 @@
         xmlns:local="clr-namespace:WebCrawler"
         xmlns:conv="clr-namespace:WebCrawler.Assets.Convert"     
         mc:Ignorable="d"
+       
         Title="MainWindow" Height="450" Width="800">
 
     <Window.Resources>
         <conv:StringToBoolConverter x:Key="StringToBoolConv"></conv:StringToBoolConverter>
         <conv:StringToBoolInvertConverter x:Key="StringToBoolInvertConv"></conv:StringToBoolInvertConverter>
+        <conv:WebsiteUrlStatusToBoolConverter x:Key="WebsiteUrlStatusToBoolConv"></conv:WebsiteUrlStatusToBoolConverter>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -37,7 +39,7 @@
                      Text="{Binding WebsitelToCrawler, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
 
             <Button Command="{Binding StartCommand}" 
-                    IsEnabled="{Binding WebsitelToCrawler, Converter={StaticResource StringToBoolConv}}"                    
+                    IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConv}}"                    
                     Margin="10 0 0 0"
                     Height="30"
                     Width="80"
@@ -46,7 +48,7 @@
             <Button Margin="10 0 0 0"
                     Height="30"
                     Width="80"
-                    >Stop</Button>
+                    Command="{Binding StopCommand}">Stop</Button>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">
