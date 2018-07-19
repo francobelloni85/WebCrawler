@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -89,7 +90,7 @@ namespace WebCrawler.ViewModels
                 NotifyPropertyChanged("UrlStatus");
             }
         }
-        
+
         private Models.WebsiteUrlStatus urlStatus = new Models.WebsiteUrlStatus();
         public Models.WebsiteUrlStatus UrlStatus {
             get { return urlStatus; }
@@ -98,7 +99,7 @@ namespace WebCrawler.ViewModels
                 NotifyPropertyChanged();
             }
         }
-        
+
         public string currentUrl = "";
         public string CurrentUrl {
             get { return currentUrl; }
@@ -107,7 +108,7 @@ namespace WebCrawler.ViewModels
                 NotifyPropertyChanged();
             }
         }
-        
+
 
         #region StartCommand   
 
@@ -119,8 +120,10 @@ namespace WebCrawler.ViewModels
         private void StartCommandExecute(object obj)
         {
             // Add "http://" if is missing
-            if (websitelToCrawler.IndexOf("http://") == -1) {
-                if (websitelToCrawler.IndexOf("https://") == -1){
+            if (websitelToCrawler.IndexOf("http://") == -1)
+            {
+                if (websitelToCrawler.IndexOf("https://") == -1)
+                {
                     websitelToCrawler = "http://" + websitelToCrawler;
                 }
             }
@@ -174,7 +177,7 @@ namespace WebCrawler.ViewModels
         #endregion
 
         #region Crawler
-        
+
         private async void StartCrawlerAsync()
         {
 
@@ -187,21 +190,20 @@ namespace WebCrawler.ViewModels
                     NotifyPropertyChanged(CurrentUrl);
 
                     HtmlWeb hw = new HtmlWeb();
-                    //HtmlDocument doc = hw.Load(CurrentUrl);
+                    HtmlResponseData replay = await GetHtmlDocument(CurrentUrl);
 
-                    HtmlDocument doc = await GetHtmlDocument(CurrentUrl);
-
-                    UrlDone.Add(UrlToDo[0]);
+                    UrlDone.Add(replay.AbsoluteUri);
                     UrlToDo.RemoveAt(0);
+
                     NotifyPropertyChanged("UrlToDo");
 
-                    foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//a[@href]"))
+                    foreach (HtmlNode link in replay.document.DocumentNode.SelectNodes("//a[@href]"))
                     {
                         HtmlAttribute att = link.Attributes["href"];
                         string linkToAdd = IsValidLink(att.Value);
                         if (linkToAdd != null)
                         {
-                            UrlToDo.Add(linkToAdd);
+                            UrlToDo.Add(linkToAdd.ToLower().Trim());
                             NotifyPropertyChanged("UrlDone");
                         }
                     }
@@ -213,14 +215,15 @@ namespace WebCrawler.ViewModels
                     NotifyPropertyChanged("UrlError");
                 }
 
-                UrlStatus.Status = Models.EnumStatus.notWorking;
-
             }
+
+            UrlStatus.Status = Models.EnumStatus.notWorking;
 
         }
 
         private string IsValidLink(string name)
         {
+            name = name.Trim();
 
             bool isCorrectUri = false;
             Uri uriTest = null;
@@ -255,63 +258,75 @@ namespace WebCrawler.ViewModels
                     return null;
                 }
 
-                bool done = false;
-
-                // Check the url is alredy done
-                foreach (string t in UrlDone)
-                {
-                    if (name == t)
-                    {
-                        done = true;
-                    }
+                if (name.IndexOf("www.") != -1) {
+                    name = name.Replace("http://", "http://wwww.");
                 }
 
-                if (done == false)
+                //NOT WORKING
+                bool alreadyDone = UrlDone.Any(name.Contains);              
+                if (alreadyDone == false)
                 {
-                    bool alreadyInList = false;
-
-                    // Check if the url is in the todo list
-                    foreach (string t in UrlToDo)
+                    bool alreadyInTodoList = UrlToDo.Any(name.Contains);
+                    if (alreadyInTodoList == false)
                     {
-                        if (name == t)
+                        if (IsValidExtension(name) == true)
                         {
-                            alreadyInList = true;
+                            return name;
                         }
-                    }
-
-                    if (alreadyInList == false)
-                    {
-                        return name;
                     }
                 }
             }
 
             return null;
         }
-        
-        private async Task<HtmlDocument> GetHtmlDocument(string url)
+
+        private static bool IsValidExtension(string url)
+        {
+
+            string ext = System.IO.Path.GetExtension(url);
+
+            switch (ext)
+            {
+                case ".jpg":
+                case ".png":
+                case ".js":
+                case ".css":
+                case ".jpeg":
+                case ".gif":
+                case "":
+                    return false;
+                default:
+                    return true;
+            }
+        }
+
+        private async Task<HtmlResponseData> GetHtmlDocument(string url)
         {
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
 
-            HtmlDocument htmlDoc = null;
+            HtmlResponseData data = null;
 
             try
             {
                 WebResponse myResponse = await request.GetResponseAsync();
-                htmlDoc = new HtmlDocument();
+                HtmlDocument htmlDoc = new HtmlDocument();
                 htmlDoc.OptionFixNestedTags = true;
                 htmlDoc.Load(myResponse.GetResponseStream());
+                data = new HtmlResponseData() { AbsoluteUri = myResponse.ResponseUri.AbsoluteUri.Trim().ToLower(), document = htmlDoc };
             }
-            catch (Exception err)
-            {
-
-
+            catch{
             }
 
-            return htmlDoc;
+            return data;
 
 
 
+        }
+
+        private class HtmlResponseData
+        {
+            public string AbsoluteUri;
+            public HtmlDocument document;
         }
 
         #endregion

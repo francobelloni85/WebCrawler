@@ -21,93 +21,109 @@
         
     </Window.Resources>
 
-    <Grid Margin="10">
+    <DockPanel>
+        
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+            <MenuItem Header="_Option">
+                <MenuItem Header="_Valid Extension"/>
+                <MenuItem Header="_Show groups" IsCheckable="True" IsChecked="True" />
+            </MenuItem>
+        </Menu>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="10" />
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="10" />
-            <ColumnDefinition Width="1*" />
-        </Grid.ColumnDefinitions>
+        <Grid Margin="10">
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="45" />
-            <RowDefinition Height="50" />
-            <RowDefinition Height="10" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal">
-            <Label Height="30">Url</Label>
-            <TextBox Width="450"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45" />
+                <RowDefinition Height="50" />
+                <RowDefinition Height="10" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal">
+                <Label Height="30">Url</Label>
+                <TextBox Width="450"
                      Height="30"
                      Margin="10 0 0 0"
                      IsEnabled="{Binding CurrentUrl, Converter={StaticResource StringToBoolInvertConv}}"
                      Text="{Binding WebsitelToCrawler, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></TextBox>
 
-            <Button Command="{Binding StartCommand}" 
+                <Button Command="{Binding StartCommand}" 
                     IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConv}}"                    
                     Margin="10 0 0 0"
                     Height="30"
                     Width="80"
                     Content="Start"></Button>
 
-            <Button Margin="10 0 0 0"
+                <Button Margin="10 0 0 0"
                     Height="30"
                     Width="80"
                     Command="{Binding StopCommand}"
                     IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvBtnStop}}"
                     >Stop</Button>
-        </StackPanel>
+            </StackPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
-            <TextBlock Grid.Row="0" Grid.Column="0" >Now processing:</TextBlock>
-            <TextBlock
+            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
+                <TextBlock Grid.Row="0" Grid.Column="0" >Now processing:</TextBlock>
+                <TextBlock
                 Margin="10 0 0 0"
                 Text="{Binding Path=CurrentUrl}"></TextBlock>
-        </StackPanel>
-
-        <StackPanel Grid.Row="3" Grid.Column="0">
-            <StackPanel Orientation="Horizontal">
-                <Label>Url done</Label>
-                <Label Content="{Binding Path=UrlDone, Converter={StaticResource ListToStringCon}}"></Label>
             </StackPanel>
-            
-            <ListView x:Name="lvUrlDone"            
+
+            <StackPanel Grid.Row="3" Grid.Column="0">
+                <StackPanel Orientation="Horizontal">
+                    <Label>Url done</Label>
+                    <Label Content="{Binding Path=UrlDone, Converter={StaticResource ListToStringCon}}"></Label>
+                </StackPanel>
+
+                <ListView x:Name="lvUrlDone"            
                       Height="250"
                  ItemsSource="{Binding Path=UrlDone}">
-            </ListView>
-        </StackPanel>
-
-        <StackPanel Grid.Row="3" Grid.Column="2">
-            
-            <StackPanel Orientation="Horizontal">
-                <Label>Url toDo</Label>
-                <Label Content="{Binding Path=UrlToDo, Converter={StaticResource ListToStringCon}}"></Label>
+                </ListView>
             </StackPanel>
 
-            <ListView x:Name="lvUrlToDo" 
+            <StackPanel Grid.Row="3" Grid.Column="2">
+
+                <StackPanel Orientation="Horizontal">
+                    <Label>Url toDo</Label>
+                    <Label Content="{Binding Path=UrlToDo, Converter={StaticResource ListToStringCon}}"></Label>
+                </StackPanel>
+
+                <ListView x:Name="lvUrlToDo" 
                       Height="250"
                  ItemsSource="{Binding Path=UrlToDo}">
-            </ListView>
-        </StackPanel>
-
-        <StackPanel Grid.Row="3" Grid.Column="4">
-            
-            <StackPanel Orientation="Horizontal">
-                <Label>Url Error</Label>
-                <Label Content="{Binding Path=UrlError, Converter={StaticResource ListToStringCon}}"></Label>
+                </ListView>
             </StackPanel>
 
-            <ListView x:Name="lvUrlError" 
+            <StackPanel Grid.Row="3" Grid.Column="4">
+
+                <StackPanel Orientation="Horizontal">
+                    <Label>Url Error</Label>
+                    <Label Content="{Binding Path=UrlError, Converter={StaticResource ListToStringCon}}"></Label>
+                </StackPanel>
+
+                <ListView x:Name="lvUrlError" 
                       Height="250"
                  ItemsSource="{Binding Path=UrlError}">
-            </ListView>
-        </StackPanel>
+                </ListView>
+            </StackPanel>
 
 
 
-    </Grid>
-
+        </Grid>
+        
+      
+    </DockPanel>
+    
+    
 </Window>
