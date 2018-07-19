@@ -65,9 +65,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Assets\Convert\ListToStringConverter.cs" />
     <Compile Include="Assets\Convert\StringToBoolConverter.cs" />
     <Compile Include="Assets\Convert\StringToBoolInvertConverter.cs" />
     <Compile Include="Assets\Convert\WebsiteUrlStatusToBoolConverter.cs" />
+    <Compile Include="Assets\Convert\WebsiteUrlStatusToBoolConverterBtnStop.cs" />
     <Compile Include="Models\HtmlHelper.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Views\MainWindowView.xaml.cs">

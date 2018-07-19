@@ -6,13 +6,19 @@
         xmlns:local="clr-namespace:WebCrawler"
         xmlns:conv="clr-namespace:WebCrawler.Assets.Convert"     
         mc:Ignorable="d"
-       
-        Title="MainWindow" Height="450" Width="800">
+        Height="{Binding SystemParameters.PrimaryScreenHeight}" 
+        Width="{Binding SystemParameters.PrimaryScreenWidth}"
+        Title="MainWindow">
 
     <Window.Resources>
         <conv:StringToBoolConverter x:Key="StringToBoolConv"></conv:StringToBoolConverter>
         <conv:StringToBoolInvertConverter x:Key="StringToBoolInvertConv"></conv:StringToBoolInvertConverter>
+        
         <conv:WebsiteUrlStatusToBoolConverter x:Key="WebsiteUrlStatusToBoolConv"></conv:WebsiteUrlStatusToBoolConverter>
+        <conv:WebsiteUrlStatusToBoolConverterBtnStop x:Key="WebsiteUrlStatusToBoolConvBtnStop"></conv:WebsiteUrlStatusToBoolConverterBtnStop>
+        
+        <conv:ListToStringConverter x:Key="ListToStringCon"></conv:ListToStringConverter>
+        
     </Window.Resources>
 
     <Grid Margin="10">
@@ -50,16 +56,24 @@
             <Button Margin="10 0 0 0"
                     Height="30"
                     Width="80"
-                    Command="{Binding StopCommand}">Stop</Button>
+                    Command="{Binding StopCommand}"
+                    IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvBtnStop}}"
+                    >Stop</Button>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
             <TextBlock Grid.Row="0" Grid.Column="0" >Now processing:</TextBlock>
-            <TextBlock Text="{Binding Path=CurrentUrl}">...</TextBlock>
+            <TextBlock
+                Margin="10 0 0 0"
+                Text="{Binding Path=CurrentUrl}"></TextBlock>
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.Column="0">
-            <Label>Url done</Label>
+            <StackPanel Orientation="Horizontal">
+                <Label>Url done</Label>
+                <Label Content="{Binding Path=UrlDone, Converter={StaticResource ListToStringCon}}"></Label>
+            </StackPanel>
+            
             <ListView x:Name="lvUrlDone"            
                       Height="250"
                  ItemsSource="{Binding Path=UrlDone}">
@@ -67,7 +81,12 @@
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.Column="2">
-            <Label>Url toDo</Label>
+            
+            <StackPanel Orientation="Horizontal">
+                <Label>Url toDo</Label>
+                <Label Content="{Binding Path=UrlToDo, Converter={StaticResource ListToStringCon}}"></Label>
+            </StackPanel>
+
             <ListView x:Name="lvUrlToDo" 
                       Height="250"
                  ItemsSource="{Binding Path=UrlToDo}">
@@ -75,7 +94,12 @@
         </StackPanel>
 
         <StackPanel Grid.Row="3" Grid.Column="4">
-            <Label >Url Error</Label>
+            
+            <StackPanel Orientation="Horizontal">
+                <Label>Url Error</Label>
+                <Label Content="{Binding Path=UrlError, Converter={StaticResource ListToStringCon}}"></Label>
+            </StackPanel>
+
             <ListView x:Name="lvUrlError" 
                       Height="250"
                  ItemsSource="{Binding Path=UrlError}">

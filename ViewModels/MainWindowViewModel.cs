@@ -63,7 +63,6 @@ namespace WebCrawler.ViewModels
 
     public class MainWindowViewModel : NotifyPropertyMainWindows
     {
-
         public ObservableCollection<string> UrlDone { get; set; }
         public ObservableCollection<string> UrlToDo { get; set; }
         public ObservableCollection<string> UrlError { get; set; }
@@ -90,8 +89,7 @@ namespace WebCrawler.ViewModels
                 NotifyPropertyChanged("UrlStatus");
             }
         }
-
-
+        
         private Models.WebsiteUrlStatus urlStatus = new Models.WebsiteUrlStatus();
         public Models.WebsiteUrlStatus UrlStatus {
             get { return urlStatus; }
@@ -100,8 +98,7 @@ namespace WebCrawler.ViewModels
                 NotifyPropertyChanged();
             }
         }
-
-
+        
         public string currentUrl = "";
         public string CurrentUrl {
             get { return currentUrl; }
@@ -110,24 +107,7 @@ namespace WebCrawler.ViewModels
                 NotifyPropertyChanged();
             }
         }
-
-
-        //public Models.Person EditModePersonSelected {
-        //    get { return editModePersonSelected; }
-
-        //    set {
-        //        if (editModePersonSelected == value)
-        //            return;
-        //        editModePersonSelected = value;
-        //        NotifyPropertyChanged();
-
-        //        //SaveCommand.RaiseCanCanExecuteChange();
-        //    }
-
-        //}
-
-
-
+        
 
         #region StartCommand   
 
@@ -138,6 +118,13 @@ namespace WebCrawler.ViewModels
 
         private void StartCommandExecute(object obj)
         {
+            // Add "http://" if is missing
+            if (websitelToCrawler.IndexOf("http://") == -1) {
+                if (websitelToCrawler.IndexOf("https://") == -1){
+                    websitelToCrawler = "http://" + websitelToCrawler;
+                }
+            }
+
             CurrentUrl = websitelToCrawler;
             this.UrlStatus.Status = Models.EnumStatus.working;
 
@@ -149,6 +136,7 @@ namespace WebCrawler.ViewModels
 
             StartCrawlerAsync();
             NotifyPropertyChanged("UrlStatus");
+            StartCommand.RaiseCanExecuteChange();
         }
 
         private bool CanStartCommand(object obj)
@@ -176,16 +164,21 @@ namespace WebCrawler.ViewModels
         private bool CanStopCommand(object obj)
         {
             return true;
+            //if (this.UrlStatus.Status == Models.EnumStatus.working)
+            //{
+            //    return true;
+            //}
+            //return false;
         }
 
         #endregion
 
-
-
+        #region Crawler
+        
         private async void StartCrawlerAsync()
         {
 
-            while ((UrlToDo.Count != 0)&&(urlStatus.Status!=Models.EnumStatus.notWorking))
+            while ((UrlToDo.Count != 0) && (urlStatus.Status != Models.EnumStatus.notWorking))
             {
 
                 try
@@ -195,7 +188,7 @@ namespace WebCrawler.ViewModels
 
                     HtmlWeb hw = new HtmlWeb();
                     //HtmlDocument doc = hw.Load(CurrentUrl);
-                    
+
                     HtmlDocument doc = await GetHtmlDocument(CurrentUrl);
 
                     UrlDone.Add(UrlToDo[0]);
@@ -217,14 +210,14 @@ namespace WebCrawler.ViewModels
                 catch
                 {
                     UrlError.Add(CurrentUrl);
-                    NotifyPropertyChanged("CurrentUrl");
+                    NotifyPropertyChanged("UrlError");
                 }
 
+                UrlStatus.Status = Models.EnumStatus.notWorking;
 
             }
 
         }
-
 
         private string IsValidLink(string name)
         {
@@ -295,8 +288,7 @@ namespace WebCrawler.ViewModels
 
             return null;
         }
-
-
+        
         private async Task<HtmlDocument> GetHtmlDocument(string url)
         {
             HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
@@ -321,5 +313,7 @@ namespace WebCrawler.ViewModels
 
 
         }
+
+        #endregion
     }
 }
