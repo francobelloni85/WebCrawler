@@ -1,7 +1,11 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace WebCrawler.ViewModels
@@ -62,12 +66,16 @@ namespace WebCrawler.ViewModels
 
         public ObservableCollection<string> UrlDone { get; set; }
         public ObservableCollection<string> UrlToDo { get; set; }
+        public ObservableCollection<string> UrlError { get; set; }
 
+        private string fullUrlWebsite;
+        private Uri fullUriWebsite;
 
         public MainWindowViewModel()
         {
             UrlDone = new ObservableCollection<string>();
             UrlToDo = new ObservableCollection<string>();
+            UrlError = new ObservableCollection<string>();
             this.StartCommand = new ButtonsCommand(StartCommandExecute, CanStartCommand);
             this.StopCommand = new ButtonsCommand(StopCommandExecute, CanStopCommand);
         }
@@ -130,10 +138,16 @@ namespace WebCrawler.ViewModels
 
         private void StartCommandExecute(object obj)
         {
-            
             CurrentUrl = websitelToCrawler;
             this.UrlStatus.Status = Models.EnumStatus.working;
-            //string data = Models.HtmlHelper.GetHtmlCode(websitelToCrawler);
+
+            Uri _uri = new Uri(websitelToCrawler);
+            fullUriWebsite = _uri;
+            fullUrlWebsite = _uri.GetLeftPart(UriPartial.Authority) + "/";
+
+            UrlToDo.Add(fullUrlWebsite);
+
+            StartCrawlerAsync();
             NotifyPropertyChanged("UrlStatus");
         }
 
@@ -168,7 +182,144 @@ namespace WebCrawler.ViewModels
 
 
 
+        private async void StartCrawlerAsync()
+        {
 
+            while ((UrlToDo.Count != 0)&&(urlStatus.Status!=Models.EnumStatus.notWorking))
+            {
+
+                try
+                {
+                    CurrentUrl = UrlToDo[0];
+                    NotifyPropertyChanged(CurrentUrl);
+
+                    HtmlWeb hw = new HtmlWeb();
+                    //HtmlDocument doc = hw.Load(CurrentUrl);
+                    
+                    HtmlDocument doc = await GetHtmlDocument(CurrentUrl);
+
+                    UrlDone.Add(UrlToDo[0]);
+                    UrlToDo.RemoveAt(0);
+                    NotifyPropertyChanged("UrlToDo");
+
+                    foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//a[@href]"))
+                    {
+                        HtmlAttribute att = link.Attributes["href"];
+                        string linkToAdd = IsValidLink(att.Value);
+                        if (linkToAdd != null)
+                        {
+                            UrlToDo.Add(linkToAdd);
+                            NotifyPropertyChanged("UrlDone");
+                        }
+                    }
+                    NotifyPropertyChanged();
+                }
+                catch
+                {
+                    UrlError.Add(CurrentUrl);
+                    NotifyPropertyChanged("CurrentUrl");
+                }
+
+
+            }
+
+        }
+
+
+        private string IsValidLink(string name)
+        {
+
+            bool isCorrectUri = false;
+            Uri uriTest = null;
+
+            try
+            {
+                uriTest = new Uri(name);
+                isCorrectUri = true;
+            }
+            catch
+            {
+                isCorrectUri = false;
+            }
+
+            if (isCorrectUri == false)
+            {
+                try
+                {
+                    uriTest = new Uri(fullUrlWebsite + name);
+                    name = fullUrlWebsite + name;
+                    isCorrectUri = true;
+                }
+                catch
+                {
+                }
+            }
+
+            if ((isCorrectUri == true) && (uriTest != null))
+            {
+                if (uriTest.GetLeftPart(UriPartial.Authority) != fullUriWebsite.GetLeftPart(UriPartial.Authority))
+                {
+                    return null;
+                }
+
+                bool done = false;
+
+                // Check the url is alredy done
+                foreach (string t in UrlDone)
+                {
+                    if (name == t)
+                    {
+                        done = true;
+                    }
+                }
+
+                if (done == false)
+                {
+                    bool alreadyInList = false;
+
+                    // Check if the url is in the todo list
+                    foreach (string t in UrlToDo)
+                    {
+                        if (name == t)
+                        {
+                            alreadyInList = true;
+                        }
+                    }
+
+                    if (alreadyInList == false)
+                    {
+                        return name;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+        private async Task<HtmlDocument> GetHtmlDocument(string url)
+        {
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(url);
+
+            HtmlDocument htmlDoc = null;
+
+            try
+            {
+                WebResponse myResponse = await request.GetResponseAsync();
+                htmlDoc = new HtmlDocument();
+                htmlDoc.OptionFixNestedTags = true;
+                htmlDoc.Load(myResponse.GetResponseStream());
+            }
+            catch (Exception err)
+            {
+
+
+            }
+
+            return htmlDoc;
+
+
+
+        }
     }
-
 }

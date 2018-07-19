@@ -22,12 +22,14 @@
             <ColumnDefinition Width="10" />
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="10" />
-            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
             <RowDefinition Height="45" />
-            <RowDefinition Height="9*" />
+            <RowDefinition Height="50" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal">
@@ -51,41 +53,33 @@
                     Command="{Binding StopCommand}">Stop</Button>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="0">
+        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
+            <TextBlock Grid.Row="0" Grid.Column="0" >Now processing:</TextBlock>
+            <TextBlock Text="{Binding Path=CurrentUrl}">...</TextBlock>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Grid.Column="0">
             <Label>Url done</Label>
-            <ListView x:Name="lvUrlDone"                 
+            <ListView x:Name="lvUrlDone"            
+                      Height="250"
                  ItemsSource="{Binding Path=UrlDone}">
             </ListView>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="2">
+        <StackPanel Grid.Row="3" Grid.Column="2">
             <Label>Url toDo</Label>
-            <ListView x:Name="lvUrlToDo"                
+            <ListView x:Name="lvUrlToDo" 
+                      Height="250"
                  ItemsSource="{Binding Path=UrlToDo}">
             </ListView>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="4" Orientation="Horizontal">
-
-            <Grid Margin="10">
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="1*" />
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0" Grid.Column="0" >Now processing:</TextBlock>
-                <TextBlock Text="{Binding Path=CurrentUrl}" Grid.Row="0" Grid.Column="2" ></TextBlock>
-                
-            </Grid>
-            
-            
+        <StackPanel Grid.Row="3" Grid.Column="4">
+            <Label >Url Error</Label>
+            <ListView x:Name="lvUrlError" 
+                      Height="250"
+                 ItemsSource="{Binding Path=UrlError}">
+            </ListView>
         </StackPanel>
 
 
