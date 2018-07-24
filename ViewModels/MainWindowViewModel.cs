@@ -109,6 +109,11 @@ namespace WebCrawler.ViewModels
             }
         }
 
+        private string httpValue = "http";
+        public string HttpValue {
+            get { return httpValue; }
+            set { this.httpValue = value; }
+        }
 
         #region StartCommand   
 
@@ -119,14 +124,16 @@ namespace WebCrawler.ViewModels
 
         private void StartCommandExecute(object obj)
         {
-            // Add "http://" if is missing
-            if (websitelToCrawler.IndexOf("http://") == -1)
-            {
-                if (websitelToCrawler.IndexOf("https://") == -1)
-                {
-                    websitelToCrawler = "http://" + websitelToCrawler;
-                }
-            }
+            //// Add "http://" if is missing
+            //if (websitelToCrawler.IndexOf("http://") == -1)
+            //{
+            //    if (websitelToCrawler.IndexOf("https://") == -1)
+            //    {
+            //        websitelToCrawler = "http://" + websitelToCrawler;
+            //    }
+            //}
+
+            websitelToCrawler = httpValue + "://www." + websitelToCrawler;
 
             CurrentUrl = websitelToCrawler;
             this.UrlStatus.Status = Models.EnumStatus.working;
@@ -209,7 +216,7 @@ namespace WebCrawler.ViewModels
                     }
                     NotifyPropertyChanged();
                 }
-                catch
+                catch (Exception err)
                 {
                     UrlError.Add(CurrentUrl);
                     NotifyPropertyChanged("UrlError");
@@ -223,58 +230,62 @@ namespace WebCrawler.ViewModels
 
         private string IsValidLink(string name)
         {
-            name = name.Trim();
-
-            bool isCorrectUri = false;
-            Uri uriTest = null;
-
             try
             {
-                uriTest = new Uri(name);
-                isCorrectUri = true;
-            }
-            catch
-            {
-                isCorrectUri = false;
-            }
+                name = name.Trim();
 
-            if (isCorrectUri == false)
-            {
+                bool isCorrectUri = false;
+                Uri uriTest = null;
+
                 try
                 {
-                    uriTest = new Uri(fullUrlWebsite + name);
-                    name = fullUrlWebsite + name;
+                    uriTest = new Uri(name);
                     isCorrectUri = true;
                 }
                 catch
                 {
+                    isCorrectUri = false;
                 }
-            }
 
-            if ((isCorrectUri == true) && (uriTest != null))
-            {
-                if (uriTest.GetLeftPart(UriPartial.Authority) != fullUriWebsite.GetLeftPart(UriPartial.Authority))
+                if (isCorrectUri == false)
                 {
-                    return null;
-                }
-
-                if (name.IndexOf("www.") != -1) {
-                    name = name.Replace("http://", "http://wwww.");
-                }
-
-                //NOT WORKING
-                bool alreadyDone = UrlDone.Any(name.Contains);              
-                if (alreadyDone == false)
-                {
-                    bool alreadyInTodoList = UrlToDo.Any(name.Contains);
-                    if (alreadyInTodoList == false)
+                    try
                     {
-                        if (IsValidExtension(name) == true)
+                        uriTest = new Uri(fullUrlWebsite + name);
+                        name = fullUrlWebsite + name;
+                        isCorrectUri = true;
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                if ((isCorrectUri == true) && (uriTest != null))
+                {
+                    if (uriTest.GetLeftPart(UriPartial.Authority) != fullUriWebsite.GetLeftPart(UriPartial.Authority))
+                    {
+                        return null;
+                    }
+                    
+                    //NOT WORKING
+                    bool alreadyDone = IsAlreadyInList(name,UrlDone);
+                    if (alreadyDone == false)
+                    {
+                        bool alreadyInTodoList = IsAlreadyInList(name,UrlToDo);
+                        if (alreadyInTodoList == false)
                         {
-                            return name;
+                            if (IsValidExtension(name) == true)
+                            {
+                                return name;
+                            }
                         }
                     }
                 }
+
+            }
+            catch(Exception err)
+            {
+
             }
 
             return null;
@@ -314,7 +325,8 @@ namespace WebCrawler.ViewModels
                 htmlDoc.Load(myResponse.GetResponseStream());
                 data = new HtmlResponseData() { AbsoluteUri = myResponse.ResponseUri.AbsoluteUri.Trim().ToLower(), document = htmlDoc };
             }
-            catch{
+            catch
+            {
             }
 
             return data;
@@ -327,6 +339,17 @@ namespace WebCrawler.ViewModels
         {
             public string AbsoluteUri;
             public HtmlDocument document;
+        }
+
+        private static bool IsAlreadyInList(string item, ObservableCollection<string> list) {
+
+            item = item.ToLower().Trim();
+            foreach (string t in list) {
+                if (t.ToLower().Trim() == item)
+                    return true;
+            }
+            return false;
+
         }
 
         #endregion

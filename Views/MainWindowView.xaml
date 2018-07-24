@@ -44,14 +44,23 @@
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
-                <RowDefinition Height="45" />
+                <RowDefinition Height="1*" />
                 <RowDefinition Height="50" />
                 <RowDefinition Height="10" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="9*" />
             </Grid.RowDefinitions>
 
             <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal">
-                <Label Height="30">Url</Label>
+                
+                <Label Height="30" FontWeight="Bold">URL:</Label>
+
+                <ComboBox VerticalAlignment="Center" SelectedItem="{Binding Path=HttpValue}">
+                    <ComboBoxItem IsSelected="True">Http</ComboBoxItem>
+                    <ComboBoxItem>Https</ComboBoxItem>
+                </ComboBox>
+                
+                <TextBlock VerticalAlignment="Center" Margin="5 0 0 0">www.</TextBlock>
+                
                 <TextBox Width="450"
                      Height="30"
                      Margin="10 0 0 0"
