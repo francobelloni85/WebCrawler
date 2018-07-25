@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WebCrawler"
-        xmlns:conv="clr-namespace:WebCrawler.Assets.Convert"     
+        xmlns:conv="clr-namespace:WebCrawler.Assets.Convert"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         Height="{Binding SystemParameters.PrimaryScreenHeight}" 
         Width="{Binding SystemParameters.PrimaryScreenWidth}"
@@ -18,6 +19,11 @@
         <conv:WebsiteUrlStatusToBoolConverterBtnStop x:Key="WebsiteUrlStatusToBoolConvBtnStop"></conv:WebsiteUrlStatusToBoolConverterBtnStop>
         
         <conv:ListToStringConverter x:Key="ListToStringCon"></conv:ListToStringConverter>
+
+        <conv:WebsiteUrlStatusToString_StartBtnConverter x:Key="WebsiteUrlStatusToString_StartBtnConv" ></conv:WebsiteUrlStatusToString_StartBtnConverter>
+        <conv:WebsiteUrlStatusToIconConverter x:Key="WebsiteUrlStatusToIconConv"></conv:WebsiteUrlStatusToIconConverter>
+
+        <conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap x:Key="WebsiteUrlStatusToBoolConvCreate"> </conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap>
         
     </Window.Resources>
 
@@ -41,13 +47,16 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="10" />
                 <ColumnDefinition Width="1*" />
+                
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*" />
-                <RowDefinition Height="50" />
+                <RowDefinition Height="20" />
                 <RowDefinition Height="10" />
                 <RowDefinition Height="9*" />
+                <RowDefinition Height="10" />
+                <RowDefinition Height="5*" />
             </Grid.RowDefinitions>
 
             <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal">
@@ -55,8 +64,8 @@
                 <Label Height="30" FontWeight="Bold">URL:</Label>
 
                 <ComboBox VerticalAlignment="Center" SelectedItem="{Binding Path=HttpValue}">
-                    <ComboBoxItem IsSelected="True">Http</ComboBoxItem>
-                    <ComboBoxItem>Https</ComboBoxItem>
+                    <ComboBoxItem IsSelected="True">http</ComboBoxItem>
+                    <ComboBoxItem>https</ComboBoxItem>
                 </ComboBox>
                 
                 <TextBlock VerticalAlignment="Center" Margin="5 0 0 0">www.</TextBlock>
@@ -72,7 +81,10 @@
                     Margin="10 0 0 0"
                     Height="30"
                     Width="80"
-                    Content="Start"></Button>
+                    Content="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToString_StartBtnConv}}">
+                    
+                    
+                </Button>
 
                 <Button Margin="10 0 0 0"
                     Height="30"
@@ -82,8 +94,13 @@
                     >Stop</Button>
             </StackPanel>
 
-            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal">
-                <TextBlock Grid.Row="0" Grid.Column="0" >Now processing:</TextBlock>
+            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Orientation="Horizontal" VerticalAlignment="Center">
+                <fa:ImageAwesome  Spin="False" SpinDuration="10" Height="20" />
+
+                <TextBlock Text="{Binding Path=FontAwesomeIcon, Converter={fa:CssClassNameConverter Mode=FromIconToString}}" />
+                               
+                
+                <TextBlock Margin="10 0 0 0">Now processing:</TextBlock>
                 <TextBlock
                 Margin="10 0 0 0"
                 Text="{Binding Path=CurrentUrl}"></TextBlock>
@@ -127,7 +144,14 @@
                 </ListView>
             </StackPanel>
 
-
+            <StackPanel Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="5" Orientation="Vertical">
+                <Button 
+                    IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvCreate}}">Create sitemap.xml</Button>
+                
+                <Label Height="30" FontWeight="Bold">URL:</Label>
+                <Label Height="30" FontWeight="Bold">URL:</Label>
+                <Label Height="30" FontWeight="Bold">URL:</Label>
+            </StackPanel>
 
         </Grid>
         

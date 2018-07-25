@@ -17,7 +17,7 @@ namespace WebCrawler.Assets.Convert
                 var t = (Models.WebsiteUrlStatus)value;
 
                 if (t.Status == Models.EnumStatus.working)
-                    return false;
+                    return true;
 
                 if (string.IsNullOrWhiteSpace(t.Ulr) == false) {
                     return true;

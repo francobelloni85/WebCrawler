@@ -7,7 +7,8 @@ using System.Windows.Data;
 
 namespace WebCrawler.Assets.Convert
 {
-    class WebsiteUrlStatusToBoolConverterBtnStop : IValueConverter
+   
+    class WebsiteUrlStatusToString_StartBtnConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -15,15 +16,20 @@ namespace WebCrawler.Assets.Convert
             {
                 var t = (Models.WebsiteUrlStatus)value;
 
-                if (t.Status == Models.EnumStatus.working)
-                    return true;
+                switch (t.Status) {
+                    case Models.EnumStatus.working:
+                        return "Pause";
+                    case Models.EnumStatus.onPause:
+                        return "Resume";
+                }
 
-                if (t.Status == Models.EnumStatus.onPause)
-                    return true;
-
+                if (string.IsNullOrWhiteSpace(t.Ulr) == false)
+                {
+                    return "Start";
+                }
             }
 
-            return false;
+            return "Start 1";
 
         }
 
@@ -32,4 +38,5 @@ namespace WebCrawler.Assets.Convert
             throw new NotImplementedException();
         }
     }
+
 }

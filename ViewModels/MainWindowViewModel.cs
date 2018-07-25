@@ -76,8 +76,11 @@ namespace WebCrawler.ViewModels
             UrlDone = new ObservableCollection<string>();
             UrlToDo = new ObservableCollection<string>();
             UrlError = new ObservableCollection<string>();
+            
             this.StartCommand = new ButtonsCommand(StartCommandExecute, CanStartCommand);
             this.StopCommand = new ButtonsCommand(StopCommandExecute, CanStopCommand);
+            this.CreateSitemapCommand = new ButtonsCommand(CreateSitemapExecute, CanCreateSitemapCommand);
+            
         }
 
         private string websitelToCrawler = string.Empty;
@@ -99,6 +102,9 @@ namespace WebCrawler.ViewModels
                 NotifyPropertyChanged();
             }
         }
+
+        public FontAwesome.WPF.FontAwesomeIcon FontAwesomeIcon = FontAwesome.WPF.FontAwesomeIcon.Play;
+
 
         public string currentUrl = "";
         public string CurrentUrl {
@@ -124,19 +130,37 @@ namespace WebCrawler.ViewModels
 
         private void StartCommandExecute(object obj)
         {
-            //// Add "http://" if is missing
-            //if (websitelToCrawler.IndexOf("http://") == -1)
-            //{
-            //    if (websitelToCrawler.IndexOf("https://") == -1)
-            //    {
-            //        websitelToCrawler = "http://" + websitelToCrawler;
-            //    }
-            //}
+            // HTTPS Problem 
+            //https://stackoverflow.com/questions/24008681/request-url-getleftparturipartial-authority-returns-http-on-https-site
+
+            switch (this.UrlStatus.Status)
+            {
+                case Models.EnumStatus.onStartup:
+                    this.UrlStatus.Status = Models.EnumStatus.working;
+                    StartWebCrawler();
+                    break;
+
+                case Models.EnumStatus.working:
+                    this.UrlStatus.Status = Models.EnumStatus.onPause;
+                    break;
+
+                case Models.EnumStatus.onPause:
+                    this.UrlStatus.Status = Models.EnumStatus.working;
+                    StartCrawlerAsync();
+                    break;
+            }
+            
+            NotifyPropertyChanged("UrlStatus");
+            //(Da chiedere cosa è)
+            StartCommand.RaiseCanExecuteChange();
+
+        }
+
+        private void StartWebCrawler()
+        {
 
             websitelToCrawler = httpValue + "://www." + websitelToCrawler;
-
             CurrentUrl = websitelToCrawler;
-            this.UrlStatus.Status = Models.EnumStatus.working;
 
             Uri _uri = new Uri(websitelToCrawler);
             fullUriWebsite = _uri;
@@ -145,8 +169,7 @@ namespace WebCrawler.ViewModels
             UrlToDo.Add(fullUrlWebsite);
 
             StartCrawlerAsync();
-            NotifyPropertyChanged("UrlStatus");
-            StartCommand.RaiseCanExecuteChange();
+
         }
 
         private bool CanStartCommand(object obj)
@@ -168,11 +191,39 @@ namespace WebCrawler.ViewModels
             CurrentUrl = "";
             WebsitelToCrawler = "";
             this.urlStatus.Ulr = "";
-            this.UrlStatus.Status = Models.EnumStatus.notWorking;
+            this.UrlStatus.Status = Models.EnumStatus.onStartup;
         }
 
         private bool CanStopCommand(object obj)
         {
+            return true;
+            //if (this.UrlStatus.Status == Models.EnumStatus.working)
+            //{
+            //    return true;
+            //}
+            //return false;
+        }
+
+        #endregion
+
+        #region Create Sitemap Command   
+
+        public ButtonsCommand CreateSitemapCommand {
+            get;
+            private set;
+        }
+
+        private void CreateSitemapExecute(object obj)
+        {
+            CurrentUrl = "";
+            WebsitelToCrawler = "";
+            this.urlStatus.Ulr = "";
+            this.UrlStatus.Status = Models.EnumStatus.onStartup;
+        }
+
+        private bool CanCreateSitemapCommand(object obj)
+        {
+            
             return true;
             //if (this.UrlStatus.Status == Models.EnumStatus.working)
             //{
@@ -188,8 +239,10 @@ namespace WebCrawler.ViewModels
         private async void StartCrawlerAsync()
         {
 
-            while ((UrlToDo.Count != 0) && (urlStatus.Status != Models.EnumStatus.notWorking))
+
+            while ((UrlToDo.Count != 0) && ((urlStatus.Status != Models.EnumStatus.onPause)) && ((urlStatus.Status != Models.EnumStatus.onStop)))
             {
+                bool isUrlRemoved = false;
 
                 try
                 {
@@ -201,6 +254,7 @@ namespace WebCrawler.ViewModels
 
                     UrlDone.Add(replay.AbsoluteUri);
                     UrlToDo.RemoveAt(0);
+                    isUrlRemoved = true;
 
                     NotifyPropertyChanged("UrlToDo");
 
@@ -220,11 +274,22 @@ namespace WebCrawler.ViewModels
                 {
                     UrlError.Add(CurrentUrl);
                     NotifyPropertyChanged("UrlError");
+                    if (isUrlRemoved == false) {
+                        UrlToDo.RemoveAt(0);
+                    }
                 }
-
             }
 
-            UrlStatus.Status = Models.EnumStatus.notWorking;
+
+            if (UrlToDo.Count == 0)
+            {
+                urlStatus.Status = Models.EnumStatus.finish;
+            }
+            else {
+                UrlStatus.Status = Models.EnumStatus.onStartup;
+            }
+
+            
 
         }
 
@@ -232,7 +297,7 @@ namespace WebCrawler.ViewModels
         {
             try
             {
-                name = name.Trim();
+                name = name.Trim().ToLower();
 
                 bool isCorrectUri = false;
                 Uri uriTest = null;
@@ -266,12 +331,12 @@ namespace WebCrawler.ViewModels
                     {
                         return null;
                     }
-                    
+
                     //NOT WORKING
-                    bool alreadyDone = IsAlreadyInList(name,UrlDone);
+                    bool alreadyDone = IsAlreadyInList(name, UrlDone);
                     if (alreadyDone == false)
                     {
-                        bool alreadyInTodoList = IsAlreadyInList(name,UrlToDo);
+                        bool alreadyInTodoList = IsAlreadyInList(name, UrlToDo);
                         if (alreadyInTodoList == false)
                         {
                             if (IsValidExtension(name) == true)
@@ -283,7 +348,7 @@ namespace WebCrawler.ViewModels
                 }
 
             }
-            catch(Exception err)
+            catch (Exception err)
             {
 
             }
@@ -341,10 +406,12 @@ namespace WebCrawler.ViewModels
             public HtmlDocument document;
         }
 
-        private static bool IsAlreadyInList(string item, ObservableCollection<string> list) {
+        private static bool IsAlreadyInList(string item, ObservableCollection<string> list)
+        {
 
             item = item.ToLower().Trim();
-            foreach (string t in list) {
+            foreach (string t in list)
+            {
                 if (t.ToLower().Trim() == item)
                     return true;
             }

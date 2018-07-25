@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WebCrawler.Models
 {
-    public enum EnumStatus { working, notWorking }
+    public enum EnumStatus { onStartup, working, onPause, onStop, finish }
 
     class HtmlHelper
     {
@@ -61,7 +61,7 @@ namespace WebCrawler.Models
     public class WebsiteUrlStatus {
 
         public string Ulr { get; set; }
-        public EnumStatus Status { get; set; } = EnumStatus.notWorking;
+        public EnumStatus Status { get; set; } = EnumStatus.onStartup;
 
     }
 

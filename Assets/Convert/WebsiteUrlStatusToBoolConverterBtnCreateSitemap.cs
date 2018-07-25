@@ -7,7 +7,7 @@ using System.Windows.Data;
 
 namespace WebCrawler.Assets.Convert
 {
-    class WebsiteUrlStatusToBoolConverterBtnStop : IValueConverter
+    class WebsiteUrlStatusToBoolConverterBtnCreateSitemap : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
@@ -15,10 +15,10 @@ namespace WebCrawler.Assets.Convert
             {
                 var t = (Models.WebsiteUrlStatus)value;
 
-                if (t.Status == Models.EnumStatus.working)
+                if (t.Status == Models.EnumStatus.onStop)
                     return true;
 
-                if (t.Status == Models.EnumStatus.onPause)
+                if (t.Status == Models.EnumStatus.finish)
                     return true;
 
             }
