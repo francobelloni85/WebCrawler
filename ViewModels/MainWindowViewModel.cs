@@ -7,7 +7,9 @@ using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using System.Xml;
 
 namespace WebCrawler.ViewModels
 {
@@ -76,11 +78,11 @@ namespace WebCrawler.ViewModels
             UrlDone = new ObservableCollection<string>();
             UrlToDo = new ObservableCollection<string>();
             UrlError = new ObservableCollection<string>();
-            
+
             this.StartCommand = new ButtonsCommand(StartCommandExecute, CanStartCommand);
             this.StopCommand = new ButtonsCommand(StopCommandExecute, CanStopCommand);
             this.CreateSitemapCommand = new ButtonsCommand(CreateSitemapExecute, CanCreateSitemapCommand);
-            
+
         }
 
         private string websitelToCrawler = string.Empty;
@@ -149,7 +151,7 @@ namespace WebCrawler.ViewModels
                     StartCrawlerAsync();
                     break;
             }
-            
+
             NotifyPropertyChanged("UrlStatus");
             //(Da chiedere cosa è)
             StartCommand.RaiseCanExecuteChange();
@@ -191,7 +193,10 @@ namespace WebCrawler.ViewModels
             CurrentUrl = "";
             WebsitelToCrawler = "";
             this.urlStatus.Ulr = "";
-            this.UrlStatus.Status = Models.EnumStatus.onStartup;
+            this.UrlStatus.Status = Models.EnumStatus.onStop;
+            NotifyPropertyChanged("UrlStatus");
+            //(Da chiedere cosa è)
+            StopCommand.RaiseCanExecuteChange();
         }
 
         private bool CanStopCommand(object obj)
@@ -215,15 +220,27 @@ namespace WebCrawler.ViewModels
 
         private void CreateSitemapExecute(object obj)
         {
-            CurrentUrl = "";
-            WebsitelToCrawler = "";
-            this.urlStatus.Ulr = "";
-            this.UrlStatus.Status = Models.EnumStatus.onStartup;
+            // https://stackoverflow.com/questions/1922204/open-directory-dialog
+
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+
+                if (result != System.Windows.Forms.DialogResult.OK) {
+                    return;
+                }
+
+                CreateSitemap(dialog.SelectedPath);
+
+
+            }
+
+
         }
 
         private bool CanCreateSitemapCommand(object obj)
         {
-            
+
             return true;
             //if (this.UrlStatus.Status == Models.EnumStatus.working)
             //{
@@ -289,7 +306,7 @@ namespace WebCrawler.ViewModels
                 UrlStatus.Status = Models.EnumStatus.onStartup;
             }
 
-            
+
 
         }
 
@@ -420,5 +437,57 @@ namespace WebCrawler.ViewModels
         }
 
         #endregion
+
+        #region Create XML
+
+        private bool CreateSitemap(string path)
+        {
+            // https://msdn.microsoft.com/it-it/library/system.xml.xmldocument%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
+            // https://stackoverflow.com/questions/11492705/how-to-create-an-xml-document-using-xmldocument/11492937#11492937
+
+            bool result = false;
+
+            XmlDocument doc = new XmlDocument();
+
+            // the xml declaration 
+            XmlDeclaration xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
+            XmlElement root = doc.DocumentElement;
+            doc.InsertBefore(xmlDeclaration, root);
+
+            XmlElement urlsetElement = doc.CreateElement(string.Empty, "urlset", string.Empty);           
+            XmlAttribute attributeUrlsetElement = doc.CreateAttribute("xmlns");
+            attributeUrlsetElement.Value = "http://www.sitemaps.org/schemas/sitemap/0.9";
+            urlsetElement.Attributes.Append(attributeUrlsetElement);
+            doc.AppendChild(urlsetElement);
+
+            
+
+            foreach (string item in UrlDone) {
+
+                XmlElement elementURL = doc.CreateElement(string.Empty, "url", string.Empty);
+                
+
+                XmlElement elementLoc = doc.CreateElement(string.Empty, "loc", string.Empty);               
+                XmlText textLoc = doc.CreateTextNode(item);
+                elementLoc.AppendChild(textLoc);
+
+                elementURL.AppendChild(elementLoc);
+
+                urlsetElement.AppendChild(elementURL);
+
+            }
+
+            doc.Save(path + "\\Sitemap.xml");
+
+
+            return result;
+
+        }
+
+        #endregion
+
+
+
+
     }
 }

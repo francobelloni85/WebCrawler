@@ -144,9 +144,14 @@
                 </ListView>
             </StackPanel>
 
-            <StackPanel Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="5" Orientation="Vertical">
+            <StackPanel Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="5" Orientation="Vertical" HorizontalAlignment="Left">
+                
                 <Button 
-                    IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvCreate}}">Create sitemap.xml</Button>
+                    Width="200"
+                    Command="{Binding CreateSitemapCommand}"
+                    IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvCreate}}" >
+                    Create sitemap.xml
+                </Button>
                 
                 <Label Height="30" FontWeight="Bold">URL:</Label>
                 <Label Height="30" FontWeight="Bold">URL:</Label>
