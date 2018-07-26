@@ -1,4 +1,4 @@
-﻿<Window x:Class="WebCrawler.Views.MainWindowView"
+﻿<Controls:MetroWindow x:Class="WebCrawler.Views.MainWindowView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:WebCrawler"
         xmlns:conv="clr-namespace:WebCrawler.Assets.Convert"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         mc:Ignorable="d"
         Height="{Binding SystemParameters.PrimaryScreenHeight}" 
         Width="{Binding SystemParameters.PrimaryScreenWidth}"
@@ -14,21 +15,21 @@
     <Window.Resources>
         <conv:StringToBoolConverter x:Key="StringToBoolConv"></conv:StringToBoolConverter>
         <conv:StringToBoolInvertConverter x:Key="StringToBoolInvertConv"></conv:StringToBoolInvertConverter>
-        
+
         <conv:WebsiteUrlStatusToBoolConverter x:Key="WebsiteUrlStatusToBoolConv"></conv:WebsiteUrlStatusToBoolConverter>
         <conv:WebsiteUrlStatusToBoolConverterBtnStop x:Key="WebsiteUrlStatusToBoolConvBtnStop"></conv:WebsiteUrlStatusToBoolConverterBtnStop>
-        
+
         <conv:ListToStringConverter x:Key="ListToStringCon"></conv:ListToStringConverter>
 
         <conv:WebsiteUrlStatusToString_StartBtnConverter x:Key="WebsiteUrlStatusToString_StartBtnConv" ></conv:WebsiteUrlStatusToString_StartBtnConverter>
         <conv:WebsiteUrlStatusToIconConverter x:Key="WebsiteUrlStatusToIconConv"></conv:WebsiteUrlStatusToIconConverter>
 
-        <conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap x:Key="WebsiteUrlStatusToBoolConvCreate"> </conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap>
-        
+        <conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap x:Key="WebsiteUrlStatusToBoolConvCreate"></conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap>
+
     </Window.Resources>
 
     <DockPanel>
-        
+
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_Exit" />
@@ -47,7 +48,7 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="10" />
                 <ColumnDefinition Width="1*" />
-                
+
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
@@ -60,16 +61,16 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.ColumnSpan="5" Orientation="Horizontal">
-                
+
                 <Label Height="30" FontWeight="Bold">URL:</Label>
 
                 <ComboBox VerticalAlignment="Center" SelectedItem="{Binding Path=HttpValue}">
                     <ComboBoxItem IsSelected="True">http</ComboBoxItem>
                     <ComboBoxItem>https</ComboBoxItem>
                 </ComboBox>
-                
+
                 <TextBlock VerticalAlignment="Center" Margin="5 0 0 0">www.</TextBlock>
-                
+
                 <TextBox Width="450"
                      Height="30"
                      Margin="10 0 0 0"
@@ -82,8 +83,6 @@
                     Height="30"
                     Width="80"
                     Content="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToString_StartBtnConv}}">
-                    
-                    
                 </Button>
 
                 <Button Margin="10 0 0 0"
@@ -98,8 +97,8 @@
                 <fa:ImageAwesome  Spin="False" SpinDuration="10" Height="20" />
 
                 <TextBlock Text="{Binding Path=FontAwesomeIcon, Converter={fa:CssClassNameConverter Mode=FromIconToString}}" />
-                               
-                
+
+
                 <TextBlock Margin="10 0 0 0">Now processing:</TextBlock>
                 <TextBlock
                 Margin="10 0 0 0"
@@ -112,7 +111,8 @@
                     <Label Content="{Binding Path=UrlDone, Converter={StaticResource ListToStringCon}}"></Label>
                 </StackPanel>
 
-                <ListView x:Name="lvUrlDone"            
+                <ListView 
+                    x:Name="lvUrlDone"            
                       Height="250"
                  ItemsSource="{Binding Path=UrlDone}">
                 </ListView>
@@ -145,23 +145,23 @@
             </StackPanel>
 
             <StackPanel Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="5" Orientation="Vertical" HorizontalAlignment="Left">
-                
-                <Button 
+
+                <Button                    
                     Width="200"
                     Command="{Binding CreateSitemapCommand}"
                     IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvCreate}}" >
                     Create sitemap.xml
                 </Button>
-                
+
                 <Label Height="30" FontWeight="Bold">URL:</Label>
                 <Label Height="30" FontWeight="Bold">URL:</Label>
                 <Label Height="30" FontWeight="Bold">URL:</Label>
             </StackPanel>
 
         </Grid>
-        
-      
+
+
     </DockPanel>
-    
-    
-</Window>
+
+
+</Controls:MetroWindow>

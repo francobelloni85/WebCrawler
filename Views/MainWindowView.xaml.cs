@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MahApps.Metro.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,8 @@ namespace WebCrawler.Views
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindowView : Window
+    /// 
+    public partial class MainWindowView
     {
         public MainWindowView(ViewModels.MainWindowViewModel vm)
         {
@@ -26,4 +28,19 @@ namespace WebCrawler.Views
             DataContext = vm;
         }
     }
+
+    //public partial class MainWindowView : MetroWindow
+    //{
+
+    //    public MainWindowView(ViewModels.MainWindowViewModel vm)
+    //    {
+    //        InitializeComponent();
+            
+    //        //DataContext = vm;
+    //    }
+
+
+
+    //}
+
 }
