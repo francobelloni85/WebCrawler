@@ -76,6 +76,7 @@ namespace WebCrawler.ViewModels
         private string fullUrlWebsite;
         private Uri fullUriWebsite;
 
+        // Costruttore <<<<
         public MainWindowViewModel()
         {
             UrlDone = new ObservableCollection<string>();
@@ -85,7 +86,7 @@ namespace WebCrawler.ViewModels
             this.StartCommand = new ButtonsCommand(StartCommandExecute, CanStartCommand);
             this.StopCommand = new ButtonsCommand(StopCommandExecute, CanStopCommand);
             this.CreateSitemapCommand = new ButtonsCommand(CreateSitemapExecute, CanCreateSitemapCommand);
-
+            this.ValidExtensionCommand = new ButtonsCommand(ValidExtensionExecute, CanValidExtensionCommand);
         }
 
         private string websitelToCrawler = string.Empty;
@@ -126,6 +127,9 @@ namespace WebCrawler.ViewModels
             set { this.httpValue = value; }
         }
 
+        public bool ValidExtensionFlyouts { get; set; } = false;
+
+
         #region StartCommand   
 
         public ButtonsCommand StartCommand {
@@ -135,6 +139,8 @@ namespace WebCrawler.ViewModels
 
         private void StartCommandExecute(object obj)
         {
+
+
             // HTTPS Problem 
             //https://stackoverflow.com/questions/24008681/request-url-getleftparturipartial-authority-returns-http-on-https-site
 
@@ -229,7 +235,8 @@ namespace WebCrawler.ViewModels
             {
                 System.Windows.Forms.DialogResult result = dialog.ShowDialog();
 
-                if (result != System.Windows.Forms.DialogResult.OK) {
+                if (result != System.Windows.Forms.DialogResult.OK)
+                {
                     return;
                 }
 
@@ -258,29 +265,79 @@ namespace WebCrawler.ViewModels
 
         private async void StartCrawlerAsync()
         {
-
+            
 
             while ((UrlToDo.Count != 0) && ((urlStatus.Status != Models.EnumStatus.onPause)) && ((urlStatus.Status != Models.EnumStatus.onStop)))
             {
-                bool isUrlRemoved = false;
-
+                
                 try
                 {
                     CurrentUrl = UrlToDo[0];
                     NotifyPropertyChanged(CurrentUrl);
 
-                    HtmlWeb hw = new HtmlWeb();
+                    //HtmlWeb hw = new HtmlWeb();
                     HtmlResponseData replay = await GetHtmlDocument(CurrentUrl);
 
-                    UrlDone.Add(replay.AbsoluteUri);
-                    UrlToDo.RemoveAt(0);
-                    isUrlRemoved = true;
+                    if (replay != null)
+                    {
+                        AnalizePage(replay);
+                        UrlDone.Add(replay.AbsoluteUri);
+                        NotifyPropertyChanged("UrlDone");
+                    }
+                    else {
+                        UrlError.Add(CurrentUrl);
+                    }
 
+                    UrlToDo.RemoveAt(0);
                     NotifyPropertyChanged("UrlToDo");
 
-                    foreach (HtmlNode link in replay.document.DocumentNode.SelectNodes("//a[@href]"))
+
+                }
+                catch (Exception err)
+                {
+                    UrlError.Add(CurrentUrl);
+                    NotifyPropertyChanged("UrlError");
+                }
+            }
+
+
+            if (UrlToDo.Count == 0){
+                urlStatus.Status = Models.EnumStatus.finish;
+                CurrentUrl = "";
+            } else {
+                UrlStatus.Status = Models.EnumStatus.onStartup;
+            }
+
+            NotifyPropertyChanged("UrlStatus");
+
+
+        }
+
+        private bool AnalizePage(HtmlResponseData replay)
+        {
+
+            try
+            {
+                HtmlNodeCollection _list = replay.document.DocumentNode.SelectNodes("//a[@href]");
+
+                if (_list.Count == 0)
+                    return false;
+
+                foreach (HtmlNode link in _list)
+                {
+                    HtmlAttribute att = null;
+                    try
                     {
-                        HtmlAttribute att = link.Attributes["href"];
+                        att = link.Attributes["href"];
+                    }
+                    catch (Exception err2)
+                    {
+                        var dedug2 = "";
+                    }
+
+                    if (att != null)
+                    {
+                        //HtmlAttribute att = link.Attributes["href"];
                         string linkToAdd = IsValidLink(att.Value);
                         if (linkToAdd != null)
                         {
@@ -288,28 +345,18 @@ namespace WebCrawler.ViewModels
                             NotifyPropertyChanged("UrlDone");
                         }
                     }
-                    NotifyPropertyChanged();
+
                 }
-                catch (Exception err)
-                {
-                    UrlError.Add(CurrentUrl);
-                    NotifyPropertyChanged("UrlError");
-                    if (isUrlRemoved == false) {
-                        UrlToDo.RemoveAt(0);
-                    }
-                }
+                NotifyPropertyChanged();
+
             }
-
-
-            if (UrlToDo.Count == 0)
+            catch (Exception err1)
             {
-                urlStatus.Status = Models.EnumStatus.finish;
-            }
-            else {
-                UrlStatus.Status = Models.EnumStatus.onStartup;
+                var dedug1 = "";
+                return false;
             }
 
-
+            return true;
 
         }
 
@@ -368,7 +415,7 @@ namespace WebCrawler.ViewModels
                 }
 
             }
-            catch (Exception err)
+            catch
             {
 
             }
@@ -378,6 +425,11 @@ namespace WebCrawler.ViewModels
 
         private static bool IsValidExtension(string url)
         {
+
+            //https://stackoverflow.com/questions/3784477/c-sharp-approach-for-saving-user-settings-in-a-wpf-application
+            //https://weblogs.asp.net/pwelter34/444961
+            //var t = WebCrawler.Properties.Settings.Default.FileExtension;
+
 
             string ext = System.IO.Path.GetExtension(url);
 
@@ -457,20 +509,21 @@ namespace WebCrawler.ViewModels
             XmlElement root = doc.DocumentElement;
             doc.InsertBefore(xmlDeclaration, root);
 
-            XmlElement urlsetElement = doc.CreateElement(string.Empty, "urlset", string.Empty);           
+            XmlElement urlsetElement = doc.CreateElement(string.Empty, "urlset", string.Empty);
             XmlAttribute attributeUrlsetElement = doc.CreateAttribute("xmlns");
             attributeUrlsetElement.Value = "http://www.sitemaps.org/schemas/sitemap/0.9";
             urlsetElement.Attributes.Append(attributeUrlsetElement);
             doc.AppendChild(urlsetElement);
 
-            
 
-            foreach (string item in UrlDone) {
+
+            foreach (string item in UrlDone)
+            {
 
                 XmlElement elementURL = doc.CreateElement(string.Empty, "url", string.Empty);
-                
 
-                XmlElement elementLoc = doc.CreateElement(string.Empty, "loc", string.Empty);               
+
+                XmlElement elementLoc = doc.CreateElement(string.Empty, "loc", string.Empty);
                 XmlText textLoc = doc.CreateTextNode(item);
                 elementLoc.AppendChild(textLoc);
 
@@ -488,9 +541,28 @@ namespace WebCrawler.ViewModels
         }
 
         #endregion
+        
+        #region ValidExtensionCommand   
 
+        public ButtonsCommand ValidExtensionCommand {
+            get;
+            private set;
+        }
 
+        private void ValidExtensionExecute(object obj)
+        {
+            ValidExtensionFlyouts = !ValidExtensionFlyouts;
+            NotifyPropertyChanged("ValidExtensionFlyouts");
+            NotifyPropertyChanged();
+        }
 
+        private bool CanValidExtensionCommand(object obj)
+        {
+            return true;
+        }
+
+        #endregion
 
     }
+
 }

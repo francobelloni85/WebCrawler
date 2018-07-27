@@ -8,7 +8,7 @@ using System.Windows.Data;
 namespace WebCrawler.Assets.Convert
 {
    
-    class WebsiteUrlStatusToString_StartBtnConverter : IValueConverter
+    class WebsiteUrlStatusToStringConverterStartBtn : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

@@ -104,7 +104,7 @@
     <Compile Include="Assets\Convert\WebsiteUrlStatusToBoolConverterBtnCreateSitemap.cs" />
     <Compile Include="Assets\Convert\WebsiteUrlStatusToBoolConverterBtnStop.cs" />
     <Compile Include="Assets\Convert\WebsiteUrlStatusToIconConverter.cs" />
-    <Compile Include="Assets\Convert\WebsiteUrlStatusToString_StartBtnConverter.cs" />
+    <Compile Include="Assets\Convert\WebsiteUrlStatusToStringConverterStartBtn.cs" />
     <Compile Include="Models\HtmlHelper.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="Views\MainWindowView.xaml.cs">

@@ -6,11 +6,17 @@
         xmlns:local="clr-namespace:WebCrawler"
         xmlns:conv="clr-namespace:WebCrawler.Assets.Convert"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:vm="clr-namespace:WebCrawler.ViewModels"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         mc:Ignorable="d"
         Height="{Binding SystemParameters.PrimaryScreenHeight}" 
         Width="{Binding SystemParameters.PrimaryScreenWidth}"
-        Title="MainWindow">
+        Title="Web Crawler">
+
+    <Window.DataContext>
+        <vm:MainWindowViewModel></vm:MainWindowViewModel>
+    </Window.DataContext>
+
 
     <Window.Resources>
         <conv:StringToBoolConverter x:Key="StringToBoolConv"></conv:StringToBoolConverter>
@@ -21,7 +27,7 @@
 
         <conv:ListToStringConverter x:Key="ListToStringCon"></conv:ListToStringConverter>
 
-        <conv:WebsiteUrlStatusToString_StartBtnConverter x:Key="WebsiteUrlStatusToString_StartBtnConv" ></conv:WebsiteUrlStatusToString_StartBtnConverter>
+        <conv:WebsiteUrlStatusToStringConverterStartBtn x:Key="WebsiteUrlStatusToString_StartBtnConv" ></conv:WebsiteUrlStatusToStringConverterStartBtn>
         <conv:WebsiteUrlStatusToIconConverter x:Key="WebsiteUrlStatusToIconConv"></conv:WebsiteUrlStatusToIconConverter>
 
         <conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap x:Key="WebsiteUrlStatusToBoolConvCreate"></conv:WebsiteUrlStatusToBoolConverterBtnCreateSitemap>
@@ -35,7 +41,7 @@
                 <MenuItem Header="_Exit" />
             </MenuItem>
             <MenuItem Header="_Option">
-                <MenuItem Header="_Valid Extension"/>
+                <MenuItem Header="_Valid Extension" Command="{Binding Path=ValidExtensionCommand}"/>
                 <MenuItem Header="_Show groups" IsCheckable="True" IsChecked="True" />
             </MenuItem>
         </Menu>
@@ -88,8 +94,8 @@
                 <Button Margin="10 0 0 0"
                     Height="30"
                     Width="80"
-                    Command="{Binding StopCommand}"
-                    IsEnabled="{Binding UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvBtnStop}}"
+                    Command="{Binding Path=StopCommand}"
+                    IsEnabled="{Binding Path=UrlStatus, Converter={StaticResource WebsiteUrlStatusToBoolConvBtnStop}}"
                     >Stop</Button>
             </StackPanel>
 
@@ -153,15 +159,21 @@
                     Create sitemap.xml
                 </Button>
 
-                <Label Height="30" FontWeight="Bold">URL:</Label>
-                <Label Height="30" FontWeight="Bold">URL:</Label>
-                <Label Height="30" FontWeight="Bold">URL:</Label>
             </StackPanel>
 
         </Grid>
 
-
     </DockPanel>
+
+    <Controls:MetroWindow.Flyouts>
+        <Controls:FlyoutsControl>
+            <Controls:Flyout x:Name="FlyoutExtentions" IsOpen="{Binding Path=ValidExtensionFlyouts}" Header="Flyout" Position="Right" Width="200">
+                <TextBlock>Settings</TextBlock>
+            </Controls:Flyout>
+        </Controls:FlyoutsControl>
+    </Controls:MetroWindow.Flyouts>
 
 
 </Controls:MetroWindow>
+
+    
