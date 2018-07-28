@@ -167,8 +167,37 @@
 
     <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
-            <Controls:Flyout x:Name="FlyoutExtentions" IsOpen="{Binding Path=ValidExtensionFlyouts}" Header="Flyout" Position="Right" Width="200">
-                <TextBlock>Settings</TextBlock>
+            <Controls:Flyout x:Name="FlyoutExtentions" 
+                             IsOpen="{Binding Path=ValidExtensionFlyouts}"                              
+                             Header="File extensions allowed" 
+                             Theme="Accent" 
+                             Position="Left" 
+                             Width="300">
+                <StackPanel>
+                    <ListBox Margin="15"
+                             VerticalAlignment="Stretch"
+                             ItemsSource="{Binding Path=UserPreferenceList}"
+                             SelectionMode="Multiple">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <CheckBox Content="{Binding Path=Name}"  IsChecked="{Binding Path=IsValid}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+
+                    <Button Command="{Binding Path=SavePreferenceCommand}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:FontAwesome Icon="Flag" />
+                                <TextBlock Margin="10 0 0 0">Save</TextBlock>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+
             </Controls:Flyout>
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>

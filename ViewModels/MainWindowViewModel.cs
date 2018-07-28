@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Xml;
+
 
 namespace WebCrawler.ViewModels
 {
@@ -72,6 +74,8 @@ namespace WebCrawler.ViewModels
         public ObservableCollection<string> UrlDone { get; set; }
         public ObservableCollection<string> UrlToDo { get; set; }
         public ObservableCollection<string> UrlError { get; set; }
+        
+        public ObservableCollection<Models.ExtensionData> UserPreferenceList { get; set; }
 
         private string fullUrlWebsite;
         private Uri fullUriWebsite;
@@ -82,11 +86,47 @@ namespace WebCrawler.ViewModels
             UrlDone = new ObservableCollection<string>();
             UrlToDo = new ObservableCollection<string>();
             UrlError = new ObservableCollection<string>();
+            UserPreferenceList = new ObservableCollection<Models.ExtensionData>();
 
             this.StartCommand = new ButtonsCommand(StartCommandExecute, CanStartCommand);
             this.StopCommand = new ButtonsCommand(StopCommandExecute, CanStopCommand);
             this.CreateSitemapCommand = new ButtonsCommand(CreateSitemapExecute, CanCreateSitemapCommand);
             this.ValidExtensionCommand = new ButtonsCommand(ValidExtensionExecute, CanValidExtensionCommand);
+            this.SavePreferenceCommand = new ButtonsCommand(SavePreferenceExecute, CanSavePreferenceCommand);
+
+            LoadUserPreference();
+
+        }
+
+        private void LoadUserPreference()
+        {
+            string userPreferenceSerialize = string.Empty;
+
+            if (String.IsNullOrEmpty(Properties.Settings.Default.FileExtension) == true)
+            {
+                Models.ValidExtensionData valid = new Models.ValidExtensionData();
+                userPreferenceSerialize = JsonConvert.SerializeObject(valid);
+                Properties.Settings.Default.FileExtension = userPreferenceSerialize;
+                Properties.Settings.Default.Save();
+            }
+            else
+            {
+                userPreferenceSerialize = Properties.Settings.Default.FileExtension;
+            }
+
+
+            int indexStart = userPreferenceSerialize.IndexOf('[');
+            int indexEnd = userPreferenceSerialize.LastIndexOf(']');
+            int countCharEndString = userPreferenceSerialize.Length - indexEnd;
+
+            string clean = userPreferenceSerialize.Substring(indexStart, userPreferenceSerialize.Length - (indexStart + countCharEndString)+1);
+
+            List<Models.ExtensionData> deserializedName = JsonConvert.DeserializeObject<List<Models.ExtensionData>>(clean);
+
+            foreach (Models.ExtensionData item in deserializedName) {
+                UserPreferenceList.Add(item);
+            }
+
         }
 
         private string websitelToCrawler = string.Empty;
@@ -261,15 +301,71 @@ namespace WebCrawler.ViewModels
 
         #endregion
 
+        #region SavePreferenceCommand   
+
+        public ButtonsCommand SavePreferenceCommand {
+            get;
+            private set;
+        }
+
+        private void SavePreferenceExecute(object obj)
+        {
+
+            Models.ValidExtensionData validExtensionData = new Models.ValidExtensionData(UserPreferenceList);
+            string userPreferenceSerialize = JsonConvert.SerializeObject(validExtensionData);
+
+            Properties.Settings.Default.FileExtension = userPreferenceSerialize;
+            Properties.Settings.Default.Save();
+
+            // Configure the message box to be displayed
+            string messageBoxText = "User Preference Saved";
+            string caption = "File Extension";
+            MessageBoxButton button = MessageBoxButton.OK;
+            MessageBoxImage icon = MessageBoxImage.Information;
+
+            // Display message box
+            MessageBox.Show(messageBoxText, caption, button, icon);
+
+        }
+
+
+        private bool CanSavePreferenceCommand(object obj)
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region ValidExtensionCommand   
+
+        public ButtonsCommand ValidExtensionCommand {
+            get;
+            private set;
+        }
+
+        private void ValidExtensionExecute(object obj)
+        {
+            ValidExtensionFlyouts = !ValidExtensionFlyouts;
+            NotifyPropertyChanged("ValidExtensionFlyouts");
+            NotifyPropertyChanged();
+        }
+
+        private bool CanValidExtensionCommand(object obj)
+        {
+            return true;
+        }
+
+        #endregion
+
         #region Crawler
 
         private async void StartCrawlerAsync()
         {
-            
+
 
             while ((UrlToDo.Count != 0) && ((urlStatus.Status != Models.EnumStatus.onPause)) && ((urlStatus.Status != Models.EnumStatus.onStop)))
             {
-                
+
                 try
                 {
                     CurrentUrl = UrlToDo[0];
@@ -284,14 +380,13 @@ namespace WebCrawler.ViewModels
                         UrlDone.Add(replay.AbsoluteUri);
                         NotifyPropertyChanged("UrlDone");
                     }
-                    else {
+                    else
+                    {
                         UrlError.Add(CurrentUrl);
                     }
 
                     UrlToDo.RemoveAt(0);
                     NotifyPropertyChanged("UrlToDo");
-
-
                 }
                 catch (Exception err)
                 {
@@ -301,16 +396,17 @@ namespace WebCrawler.ViewModels
             }
 
 
-            if (UrlToDo.Count == 0){
+            if (UrlToDo.Count == 0)
+            {
                 urlStatus.Status = Models.EnumStatus.finish;
                 CurrentUrl = "";
-            } else {
+            }
+            else
+            {
                 UrlStatus.Status = Models.EnumStatus.onStartup;
             }
 
             NotifyPropertyChanged("UrlStatus");
-
-
         }
 
         private bool AnalizePage(HtmlResponseData replay)
@@ -430,8 +526,8 @@ namespace WebCrawler.ViewModels
             //https://weblogs.asp.net/pwelter34/444961
             //var t = WebCrawler.Properties.Settings.Default.FileExtension;
 
-
             string ext = System.IO.Path.GetExtension(url);
+            
 
             switch (ext)
             {
@@ -446,6 +542,9 @@ namespace WebCrawler.ViewModels
                 default:
                     return true;
             }
+
+
+
         }
 
         private async Task<HtmlResponseData> GetHtmlDocument(string url)
@@ -541,27 +640,8 @@ namespace WebCrawler.ViewModels
         }
 
         #endregion
+
         
-        #region ValidExtensionCommand   
-
-        public ButtonsCommand ValidExtensionCommand {
-            get;
-            private set;
-        }
-
-        private void ValidExtensionExecute(object obj)
-        {
-            ValidExtensionFlyouts = !ValidExtensionFlyouts;
-            NotifyPropertyChanged("ValidExtensionFlyouts");
-            NotifyPropertyChanged();
-        }
-
-        private bool CanValidExtensionCommand(object obj)
-        {
-            return true;
-        }
-
-        #endregion
 
     }
 
