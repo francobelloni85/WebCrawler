@@ -1,4 +1,6 @@
 ﻿using HtmlAgilityPack;
+using LiveCharts;
+using LiveCharts.Wpf;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Xml;
 
@@ -18,6 +21,10 @@ namespace WebCrawler.ViewModels
     // THEME 
     // https://www.nuget.org/packages/MaterialDesignThemes/
     // https://mahapps.com/guides/quick-start.html
+
+    // CHARS
+    // https://lvcharts.net/App/examples/v1/wpf/Basic%20Line%20Chart
+    // (or) https://github.com/oxyplot/oxyplot
 
     public class ButtonsCommand : ICommand
     {
@@ -74,7 +81,7 @@ namespace WebCrawler.ViewModels
         public ObservableCollection<string> UrlDone { get; set; }
         public ObservableCollection<string> UrlToDo { get; set; }
         public ObservableCollection<string> UrlError { get; set; }
-        
+
         public ObservableCollection<Models.ExtensionData> UserPreferenceList { get; set; }
 
         private string fullUrlWebsite;
@@ -95,7 +102,7 @@ namespace WebCrawler.ViewModels
             this.SavePreferenceCommand = new ButtonsCommand(SavePreferenceExecute, CanSavePreferenceCommand);
 
             LoadUserPreference();
-
+            
         }
 
         private void LoadUserPreference()
@@ -119,11 +126,12 @@ namespace WebCrawler.ViewModels
             int indexEnd = userPreferenceSerialize.LastIndexOf(']');
             int countCharEndString = userPreferenceSerialize.Length - indexEnd;
 
-            string clean = userPreferenceSerialize.Substring(indexStart, userPreferenceSerialize.Length - (indexStart + countCharEndString)+1);
+            string clean = userPreferenceSerialize.Substring(indexStart, userPreferenceSerialize.Length - (indexStart + countCharEndString) + 1);
 
             List<Models.ExtensionData> deserializedName = JsonConvert.DeserializeObject<List<Models.ExtensionData>>(clean);
 
-            foreach (Models.ExtensionData item in deserializedName) {
+            foreach (Models.ExtensionData item in deserializedName)
+            {
                 UserPreferenceList.Add(item);
             }
 
@@ -168,7 +176,6 @@ namespace WebCrawler.ViewModels
         }
 
         public bool ValidExtensionFlyouts { get; set; } = false;
-
 
         #region StartCommand   
 
@@ -527,7 +534,7 @@ namespace WebCrawler.ViewModels
             //var t = WebCrawler.Properties.Settings.Default.FileExtension;
 
             string ext = System.IO.Path.GetExtension(url);
-            
+
 
             switch (ext)
             {
@@ -641,8 +648,32 @@ namespace WebCrawler.ViewModels
 
         #endregion
 
-        
 
+
+    }
+
+    public partial class PieChartExample : UserControl
+    {
+        public PieChartExample()
+        {
+            PointLabel = chartPoint =>
+                string.Format("{0} ({1:P})", chartPoint.Y, chartPoint.Participation);
+            DataContext = this;
+        }
+
+        public Func<ChartPoint, string> PointLabel { get; set; }
+
+        private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
+        {
+            var chart = (LiveCharts.Wpf.PieChart)chartpoint.ChartView;
+
+            //clear selected slice.
+            foreach (PieSeries series in chart.Series)
+                series.PushOut = 0;
+
+            var selectedSeries = (PieSeries)chartpoint.SeriesView;
+            selectedSeries.PushOut = 8;
+        }
     }
 
 }
